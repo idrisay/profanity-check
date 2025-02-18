@@ -3,20 +3,18 @@
   "version": "1.2.0",
   "description": "Check profanity words for supported languages.",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "index.js",
   "exports": {
-    "import": "./dist/index.js",
-    "require": "./dist/index.cjs"
+    "import": "./index.js"
   },
   "scripts": {
-    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "example": "tsx example.ts",
-    "prepublishOnly": "npm run build"
+    "example": "node example.js"
   },
   "files": [
-    "dist"
+    "index.js",
+    "bad_words",
+    "valid_words"
   ],
   "keywords": [
     "profanity",
@@ -24,10 +22,5 @@
     "react"
   ],
   "author": "idrisay",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/node": "^22.13.4",
-    "tsx": "^4.7.0",
-    "typescript": "^5.0.0"
-  }
+  "license": "ISC"
 }
