@@ -11,15 +11,16 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "example": "node example.js"
   },
+  "types": "index.d.ts",
   "files": [
     "index.js",
+    "index.d.ts",
     "bad_words",
     "valid_words"
   ],
   "keywords": [
     "profanity",
-    "badwords",
-    "react"
+    "badwords"
   ],
   "author": "idrisay",
   "license": "ISC"

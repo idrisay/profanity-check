@@ -44,13 +44,12 @@ function isProfane(text, language = "en") {
     console.warn(`Language ${language} not supported.`);
     return false;
   }
-
+  
   const { badWords, validWords } = wordLists[language];
   const words = text.toLowerCase().split(/\s+/);
-
-  return words.some(
-    (word) => badWords.includes(word) && !validWords.includes(word)
-  );
+  
+  return words.some(word => badWords.includes(word) && !validWords.includes(word));
 }
 
-export default isProfane
+export default isProfane;
+
