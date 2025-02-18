@@ -10,62 +10,65 @@ npm install @idrisay/profanity-check
 
 ## Usage
 
-```typescript
-import ProfanityFilter from '@idrisay/profanity-check';
+```javascript
+import isProfane from '@idrisay/profanity-check';
 
-// Initialize with language (defaults to 'en')
-const filter = new ProfanityFilter('en');
+// Check if text contains profanity (defaults to English)
+console.log(isProfane('hello world')); // false
+console.log(isProfane('bad word')); // true if "bad" is in badwords list
 
-// Check if text contains profanity
-console.log(filter.isProfane('hello world')); // false
-console.log(filter.isProfane('bad word')); // true (if "bad" is in bad_words list)
-
-// Clean text by replacing profanity with asterisks
-console.log(filter.cleanText('hello bad word')); // "hello *** word"
-
-// Add custom words to the filter
-filter.addWord('customBadWord');
-
-// Remove words from the filter
-filter.removeWord('customBadWord');
+// Check with specific language
+console.log(isProfane('hello world', 'en')); // false
+console.log(isProfane('puta', 'es')); // true
 ```
 
 ## Features
 
-- 🌍 Multiple language support
-- 📝 Custom word lists
+- 🌍 Multiple language support (en, es, de, fr, it, pt)
+- 📝 Pre-configured word lists
 - 🔤 Case-insensitive matching
-- ⭐ Word replacement
-- ✨ Add/remove words dynamically
+- ⭐ Simple and lightweight
+- ✨ Zero dependencies
 
-## File Structure
+## Supported Languages
 
-```
-your-project/
-├── bad_words/
-│   ├── en.json
-│   └── other-language.json
-└── valid_words/
-    ├── en.json
-    └── other-language.json
-```
+- 🇬🇧 English (en)
+- 🇪🇸 Spanish (es)
+- 🇩🇪 German (de)
+- 🇫🇷 French (fr)
+- 🇮🇹 Italian (it)
+- 🇵🇹 Portuguese (pt)
 
 ## API Reference
 
-### `new ProfanityFilter(language?: string)`
-Creates a new instance of the filter. Language defaults to 'en'.
+### `isProfane(text: string, language?: string): boolean`
 
-### `isProfane(text: string): boolean`
-Returns true if the text contains profanity.
+Checks if the given text contains profanity.
 
-### `cleanText(text: string, replacement: string = "*"): string`
-Replaces profane words with the specified replacement character.
+- `text`: The text to check
+- `language`: Optional language code (defaults to 'en')
+  - Supported codes: 'en', 'es', 'de', 'fr', 'it', 'pt'
+- Returns: `boolean` - true if profanity is found
 
-### `addWord(word: string): void`
-Adds a new word to the profanity list.
+## Examples
 
-### `removeWord(word: string): void`
-Removes a word from the profanity list.
+```javascript
+// Basic usage
+isProfane('hello world'); // false
+isProfane('some bad word'); // true if contains profanity
+
+// Different languages
+isProfane('hello', 'en'); // false
+isProfane('puta', 'es'); // true
+isProfane('arsch', 'de'); // true
+
+// Sentence checking
+isProfane('This is a normal sentence', 'en'); // false
+isProfane('This ass is bad', 'en'); // true
+
+// Unsupported language
+isProfane('hello', 'xx'); // false (with warning)
+```
 
 ## Contributing
 
