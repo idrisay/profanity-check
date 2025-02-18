@@ -1,49 +1,56 @@
-import * as fs from "node:fs";
-import * as path from "node:path";
-import { fileURLToPath } from "node:url";
-// Get current directory path
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-class ProfanityFilter {
-    #language;
-    #badWords;
-    #validWords;
-    constructor(language = "en") {
-        this.#language = language;
-        this.#badWords = this.#loadWords(`./bad_words/${language}.json`);
-        this.#validWords = this.#loadWords(`./valid_words/${language}.json`);
-    }
-    #loadWords(filePath) {
-        try {
-            return JSON.parse(fs.readFileSync(path.join(__dirname, filePath), "utf-8"));
-        }
-        catch (error) {
-            console.error(`Error loading ${filePath}:`, error);
-            return [];
-        }
-    }
-    isProfane(text) {
-        const words = text.toLowerCase().split(/\s+/);
-        return words.some((word) => this.#badWords.includes(word) && !this.#validWords.includes(word));
-    }
-    cleanText(text, replacement = "*") {
-        return text
-            .split(/\s+/)
-            .map((word) => this.isProfane(word) ? replacement.repeat(word.length) : word)
-            .join(" ");
-    }
-    addWord(word) {
-        if (!this.#badWords.includes(word)) {
-            this.#badWords.push(word);
-            this.#saveWords(`./bad_words/${this.#language}.json`, this.#badWords);
-        }
-    }
-    removeWord(word) {
-        this.#badWords = this.#badWords.filter((w) => w !== word);
-        this.#saveWords(`./bad_words/${this.#language}.json`, this.#badWords);
-    }
-    #saveWords(filePath, words) {
-        fs.writeFileSync(path.join(__dirname, filePath), JSON.stringify(words, null, 2), "utf-8");
-    }
+import badWordsDE from "./bad_words/de.js";
+import badWordsEN from "./bad_words/en.js";
+import badWordsES from "./bad_words/es.js";
+import badWordsFR from "./bad_words/fr.js";
+import badWordsIT from "./bad_words/it.js";
+import badWordsPT from "./bad_words/pt.js";
+
+import validWordsDE from "./valid_words/de.js";
+import validWordsEN from "./valid_words/en.js";
+import validWordsES from "./valid_words/es.js";
+import validWordsFR from "./valid_words/fr.js";
+import validWordsIT from "./valid_words/it.js";
+import validWordsPT from "./valid_words/pt.js";
+
+const wordLists = {
+  de: {
+    badWords: badWordsDE,
+    validWords: validWordsDE,
+  },
+  en: {
+    badWords: badWordsEN,
+    validWords: validWordsEN,
+  },
+  es: {
+    badWords: badWordsES,
+    validWords: validWordsES,
+  },
+  fr: {
+    badWords: badWordsFR,
+    validWords: validWordsFR,
+  },
+  it: {
+    badWords: badWordsIT,
+    validWords: validWordsIT,
+  },
+  pt: {
+    badWords: badWordsPT,
+    validWords: validWordsPT,
+  },
+};
+
+function isProfane(text, language = "en") {
+  if (!wordLists[language]) {
+    console.warn(`Language ${language} not supported.`);
+    return false;
+  }
+
+  const { badWords, validWords } = wordLists[language];
+  const words = text.toLowerCase().split(/\s+/);
+
+  return words.some(
+    (word) => badWords.includes(word) && !validWords.includes(word)
+  );
 }
-export default ProfanityFilter;
+
+export default isProfane
