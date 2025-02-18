@@ -1,0 +1,23 @@
+{
+  "name": "@idrisay/profanity",
+  "version": "1.0.0",
+  "description": "Check profanity words for supported languages.",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "example": "tsx example.ts"
+  },
+  "keywords": [
+    "profanity",
+    "badwords",
+    "react"
+  ],
+  "author": "idrisay",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "tsx": "^4.7.0",
+    "typescript": "^5.0.0"
+  }
+}
