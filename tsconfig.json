@@ -5,6 +5,7 @@
     "moduleResolution": "Bundler",
     "esModuleInterop": true,
     "strict": true,
-    "types": ["node"]
+    "types": ["node"],
+    "declaration": true
   }
 } 

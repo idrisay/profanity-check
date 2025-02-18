@@ -7,17 +7,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 class ProfanityFilter {
-  private language: string;
-  private badWords: string[];
-  private validWords: string[];
+  #language: string;
+  #badWords: string[];
+  #validWords: string[];
 
   constructor(language: string = "en") {
-    this.language = language;
-    this.badWords = this.loadWords(`./bad_words/${language}.json`);
-    this.validWords = this.loadWords(`./valid_words/${language}.json`);
+    this.#language = language;
+    this.#badWords = this.#loadWords(`./bad_words/${language}.json`);
+    this.#validWords = this.#loadWords(`./valid_words/${language}.json`);
   }
 
-  private loadWords(filePath: string): string[] {
+  #loadWords(filePath: string): string[] {
     try {
       return JSON.parse(
         fs.readFileSync(path.join(__dirname, filePath), "utf-8")
@@ -31,7 +31,7 @@ class ProfanityFilter {
   public isProfane(text: string): boolean {
     const words = text.toLowerCase().split(/\s+/);
     return words.some(
-      (word) => this.badWords.includes(word) && !this.validWords.includes(word)
+      (word) => this.#badWords.includes(word) && !this.#validWords.includes(word)
     );
   }
 
@@ -45,18 +45,18 @@ class ProfanityFilter {
   }
 
   public addWord(word: string): void {
-    if (!this.badWords.includes(word)) {
-      this.badWords.push(word);
-      this.saveWords(`./badwords/${this.language}.json`, this.badWords);
+    if (!this.#badWords.includes(word)) {
+      this.#badWords.push(word);
+      this.#saveWords(`./bad_words/${this.#language}.json`, this.#badWords);
     }
   }
 
   public removeWord(word: string): void {
-    this.badWords = this.badWords.filter((w) => w !== word);
-    this.saveWords(`./badwords/${this.language}.json`, this.badWords);
+    this.#badWords = this.#badWords.filter((w) => w !== word);
+    this.#saveWords(`./bad_words/${this.#language}.json`, this.#badWords);
   }
 
-  private saveWords(filePath: string, words: string[]): void {
+  #saveWords(filePath: string, words: string[]): void {
     fs.writeFileSync(
       path.join(__dirname, filePath),
       JSON.stringify(words, null, 2),
