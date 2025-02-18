@@ -1,5 +1,5 @@
 {
-  "name": "@idrisay/profanity",
+  "name": "@idrisay/profanity-check",
   "version": "1.0.0",
   "description": "Check profanity words for supported languages.",
   "type": "module",
