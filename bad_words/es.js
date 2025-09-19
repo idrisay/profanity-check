@@ -533,6 +533,7 @@ export default [
   "kyke",
   "l3i+ch",
   "picazón",
+  "pinche",
   "labios",
   "restricción de cuero",
   "chaqueta recta de cuero",

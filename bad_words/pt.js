@@ -17,6 +17,7 @@ export default [
   "bosta",
   "chupa",
   "vai tomar no cu",
+  "vá se foder",
   "viado",
   "cabra da peste",
   "cabra safado",

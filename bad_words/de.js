@@ -44,6 +44,8 @@ export default [
   "hundeficker",
   "duche",
   "dick",
+  "fick",
+  "kacke",
   "deich",
   "ejakulieren",
   "ejakuliert",

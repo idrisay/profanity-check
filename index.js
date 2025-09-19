@@ -14,6 +14,9 @@ function normalizeText(text, { map = DEFAULT_LEET_MAP, collapseRepeats = true } 
   // Lowercase & NFKD to strip diacritics (ä -> a)
   let s = text.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
 
+  // Remove non-alphanumerics except spaces
+  s = s.replace(/[^a-z0-9\s]/g, '');
+
   // Map common leetspeak
   s = s.replace(/[@4013$5!¡7]/g, ch => map[ch] ?? ch);
 
@@ -72,13 +75,31 @@ const patternsEN = [
   // Add language-specific phrases here
 ];
 
+/**
+ * Portuguese multi-word patterns
+ * These run on the *normalized* text (accents stripped; punctuation removed).
+ * Examples matched:
+ *  - "vá se foder", "vai se foder", "vai te foder"
+ *  - "foda-se" -> "fodase"
+ */
+const patternsPT = [
+  // "va"/"vai se|te foder|fode|foda..." with common inflections
+  /\bva(?:i)?\s+(?:se|te)\s+fod(?:er|e|a|am|endo|eu)?\b/iu,
+
+  // Standalone "foda-se" (hyphen removed by normalization -> "fodase")
+  /\bfodase\b/iu,
+
+  // Optional: milder/alt spellings often used to bypass filters (comment out if too aggressive)
+  // /\bva(?:i)?\s+pra\s+merda\b/iu,
+];
+
 const LANG = {
   de: buildLangConfig({ badWords: badWordsDE }),
   en: buildLangConfig({ badWords: badWordsEN, badPatterns: patternsEN, exceptions: exceptionsEN }),
   es: buildLangConfig({ badWords: badWordsES }),
   fr: buildLangConfig({ badWords: badWordsFR }),
   it: buildLangConfig({ badWords: badWordsIT }),
-  pt: buildLangConfig({ badWords: badWordsPT }),
+  pt: buildLangConfig({ badWords: badWordsPT, badPatterns: patternsPT }), // <-- added patterns
 };
 
 /**
