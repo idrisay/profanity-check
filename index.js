@@ -1,5 +1,53 @@
 /**
- * Import bad words lists for each supported language
+ * Utilities: normalization & tokenization
+ */
+const DEFAULT_LEET_MAP = {
+  '@': 'a', '4': 'a',
+  '1': 'i', '!': 'i', '¡': 'i', 'l': 'l',
+  '0': 'o',
+  '3': 'e',
+  '$': 's', '5': 's',
+  '7': 't',
+};
+
+function normalizeText(text, { map = DEFAULT_LEET_MAP, collapseRepeats = true } = {}) {
+  // Lowercase & NFKD to strip diacritics (ä -> a)
+  let s = text.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+
+  // Map common leetspeak
+  s = s.replace(/[@4013$5!¡7]/g, ch => map[ch] ?? ch);
+
+  // Collapse long character runs: shiiiiit -> shiit
+  if (collapseRepeats) s = s.replace(/([a-z])\1{2,}/g, '$1$1');
+
+  return s;
+}
+
+// Unicode-aware tokenization: letters, numbers, apostrophes
+const WORD_RE = /[\p{L}\p{N}’'_]+/gu;
+
+function tokenize(text) {
+  return text.match(WORD_RE) ?? [];
+}
+
+/**
+ * Build language config
+ * badWords: Set<string> (single-word profanity, already lowercased/normalized)
+ * badPatterns: RegExp[] (multi-word or obfuscated forms)
+ * exceptions: Set<string> or RegExp[] (true homographs you want to allow)
+ */
+function buildLangConfig({ badWords = [], badPatterns = [], exceptions = [] }) {
+  return {
+    badWords: new Set(badWords.map(w => normalizeText(w))),
+    badPatterns: badPatterns.map(p => (p instanceof RegExp ? p : new RegExp(p, 'iu'))),
+    exceptions: exceptions.map(e => (e instanceof RegExp ? e : new RegExp(`^${e}$`, 'iu'))),
+  };
+}
+
+/**
+ * Example: you can keep your existing bad_words/* lists,
+ * just ensure they are single tokens and normalized once at load.
+ * Replace massive valid_words with a tiny set of true exceptions.
  */
 import badWordsDE from "./bad_words/de.js";
 import badWordsEN from "./bad_words/en.js";
@@ -8,47 +56,62 @@ import badWordsFR from "./bad_words/fr.js";
 import badWordsIT from "./bad_words/it.js";
 import badWordsPT from "./bad_words/pt.js";
 
-/**
- * Import valid words lists for each supported language
- */
-import validWordsDE from "./valid_words/de.js";
-import validWordsEN from "./valid_words/en.js";
-import validWordsES from "./valid_words/es.js";
-import validWordsFR from "./valid_words/fr.js";
-import validWordsIT from "./valid_words/it.js";
-import validWordsPT from "./valid_words/pt.js";
+// Small, targeted exception samples (keep these short!)
+const exceptionsEN = [
+  // Proper nouns or benign homographs
+  /^dick$/i,                // Name; keep if you want to allow it
+  /^scunthorpe$/i,
+  /^peninsula$/i,           // “penis” substring, but token != "penis"
+];
 
-/**
- * Word lists for each supported language
- * @type {Object.<string, { badWords: string[], validWords: string[] }>}
- */
-const wordLists = {
-  de: { badWords: badWordsDE, validWords: validWordsDE },
-  en: { badWords: badWordsEN, validWords: validWordsEN },
-  es: { badWords: badWordsES, validWords: validWordsES },
-  fr: { badWords: badWordsFR, validWords: validWordsFR },
-  it: { badWords: badWordsIT, validWords: validWordsIT },
-  pt: { badWords: badWordsPT, validWords: validWordsPT },
+const patternsEN = [
+  // Multi-word/spacing/obfuscation
+  /\bf\s*u\s*c\s*k\b/iu,
+  /\bson\s+of\s+a\s+bitch\b/iu,
+  /\bmother\s*f(?:\W|_)*?er\b/iu,  // mother f_ _ er
+  // Add language-specific phrases here
+];
+
+const LANG = {
+  de: buildLangConfig({ badWords: badWordsDE }),
+  en: buildLangConfig({ badWords: badWordsEN, badPatterns: patternsEN, exceptions: exceptionsEN }),
+  es: buildLangConfig({ badWords: badWordsES }),
+  fr: buildLangConfig({ badWords: badWordsFR }),
+  it: buildLangConfig({ badWords: badWordsIT }),
+  pt: buildLangConfig({ badWords: badWordsPT }),
 };
 
 /**
- * Checks if the given text contains profanity
- * @param {string} text - The text to check for profanity
- * @param {string} [language='en'] - The language code
- * @returns {boolean} True if profanity is found, false otherwise
+ * Main API
  */
-function isProfane(text, language = "en") {
-  if (!wordLists[language]) {
+export function isProfane(text, language = 'en') {
+  const cfg = LANG[language];
+  if (!cfg) {
     console.warn(`Language ${language} not supported.`);
     return false;
   }
 
-  const { badWords, validWords } = wordLists[language];
-  const words = text.toLowerCase().split(/\s+/);
+  const normalized = normalizeText(text);
+  const tokens = tokenize(normalized);
 
-  return words.some(
-    (word) => badWords.includes(word) && !validWords.includes(word)
-  );
+  // 1) exceptions: if the whole text is a single allowed token, skip quickly
+  if (tokens.length === 1 && cfg.exceptions.some(rx => rx.test(tokens[0]))) {
+    return false;
+  }
+
+  // 2) single-token profanity
+  for (const tok of tokens) {
+    // Skip super-short tokens except explicit ones you keep in badWords
+    if (tok.length <= 2 && !cfg.badWords.has(tok)) continue;
+
+    // If token matches an exception, skip it
+    if (cfg.exceptions.some(rx => rx.test(tok))) continue;
+
+    if (cfg.badWords.has(tok)) return true;
+  }
+
+  // 3) multi-word / fuzzy patterns on the normalized text
+  if (cfg.badPatterns.some(rx => rx.test(normalized))) return true;
+
+  return false;
 }
-
-export default isProfane;

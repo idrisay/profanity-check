@@ -43,6 +43,7 @@ export default [
   "dink",
   "hundeficker",
   "duche",
+  "dick",
   "deich",
   "ejakulieren",
   "ejakuliert",
